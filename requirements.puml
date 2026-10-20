@@ -1,0 +1,96 @@
+@startuml ScanCy_Requirements_Diagram
+skinparam componentStyle uml2
+title Diagram Wymagan SysML dla Aplikacji ScanCy (wg normy ISO/IEC 25002 SQuaRE)
+
+package "Wymagania Funkcjonalne (Functional Requirements)" {
+  class "REQ-FUN-001: Skanowanie Cywilne" as REQ_FUN_1 <<requirement>> {
+    System identyfikuje numer rejestracyjny, marke, model, kolor pojazdu oraz moze oszacowac prawdopodobienstwo nieoznakowanego radiowozu.
+    Id = "REQ-FUN-001"
+  }
+  
+  class "REQ-FUN-002: Skanowanie Policyjne" as REQ_FUN_2 <<requirement>> {
+    System umozliwia weryfikacje ubezpieczenia, statusu skradzionego oraz danych wlasciciela dla uprawnionych sluzb.
+    Id = "REQ-FUN-002"
+  }
+  
+  class "REQ-FUN-003: Zglaszanie Pojazdu" as REQ_FUN_3 <<requirement>> {
+    Aplikacja umozliwia zgloszenie skradzionego pojazdu do ogolnej bazy danych z poziomu konta uzytkownika.
+    Id = "REQ-FUN-003"
+  }
+
+  class "REQ-FUN-004: Monitorowanie i Nagrywanie" as REQ_FUN_4 <<requirement>> {
+    System nagrywa obraz oraz umozliwia trwale zapisanie zdarzenia drogowego.
+    Id = "REQ-FUN-004"
+  }
+}
+
+package "Wymagania Niefunkcjonalne (NFR - ISO/IEC 25002)" {
+
+  package "Performance Efficiency (Wydajnosc)" {
+    class "REQ-NFR-PERF-001: Czas Odpowiedzi Detekcji" as NFR_PERF_1 <<requirement>> {
+      Czas rozpoznania tablicy rejestracyjnej i analizy z kamery samochodowej.
+      Id = "REQ-NFR-PERF-001"
+    }
+    class "METR-PERF-01  Latency / Processing Time" as METR_PERF_1 <<metric>> {
+      Latency <= 500 ms (Real-time FPS >= 15)
+    }
+    NFR_PERF_1 ..> METR_PERF_1 : <<correlated_with>>
+  }
+
+  package "Reliability (Niezawodnosc)" {
+    class "REQ-NFR-REL-001: Ciaglosc Nagrywania i Bazy" as NFR_REL_1 <<requirement>> {
+      System dziala niezawodnie w trudnych warunkach drogowych i atmosferycznych.
+      Id = "REQ-NFR-REL-001"
+    }
+    class "METR-REL-01  MTBF (Mean Time Between Failures)" as METR_REL_1 <<metric>> {
+      MTBF >= 720 godzin ciaglej pracy
+    }
+    class "METR-REL-02  MTTR (Mean Time To Repair)" as METR_REL_2 <<metric>> {
+      MTTR <= 15 minut (automatyczny restart uslugi)
+    }
+    NFR_REL_1 ..> METR_REL_1 : <<correlated_with>>
+    NFR_REL_1 ..> METR_REL_2 : <<correlated_with>>
+  }
+
+  package "Availability (Dostepnosc)" {
+    class "REQ-NFR-AVAIL-001: Dostepnosc Uslugi w Chmurze" as NFR_AVAIL_1 <<requirement>> {
+      Baza danych zgloszen oraz synchronizacja alertow musi byc stale dostepna.
+      Id = "REQ-NFR-AVAIL-001"
+    }
+    class "METR-AVAIL-01  Uptime SLA" as METR_AVAIL_1 <<metric>> {
+      Availability >= 99.9% rocznie
+    }
+    NFR_AVAIL_1 ..> METR_AVAIL_1 : <<correlated_with>>
+  }
+
+  package "Security (Bezpieczenstwo)" {
+    class "REQ-NFR-SEC-001: Ochrona Danych i Autoryzacja" as NFR_SEC_1 <<requirement>> {
+      Dostep do funkcji policyjnych i danych osobowych po autoryzacji tokenem/kryptograficznie.
+      Id = "REQ-NFR-SEC-001"
+    }
+    class "METR-SEC-01  Czas Wygasniecia Sesji i Szyfrowanie" as METR_SEC_1 <<metric>> {
+      AES-256 w spoczynku, TLS 1.3 w transmisji, Session Timeout = 12h
+    }
+    NFR_SEC_1 ..> METR_SEC_1 : <<correlated_with>>
+  }
+
+  package "Usability (Uzytecznosc)" {
+    class "REQ-NFR-USE-001: Interfejs Kierowcy" as NFR_USE_1 <<requirement>> {
+      Czytelnosc interfejsu HUD/ekranu z odleglosci 0.8m bez rozpraszania uwagi kierowcy.
+      Id = "REQ-NFR-USE-001"
+    }
+    class "METR-USE-01  Time-To-Task" as METR_USE_1 <<metric>> {
+      Czas obslugi kluczowych akcji (1-tap action) <= 1.0 s
+    }
+    NFR_USE_1 ..> METR_USE_1 : <<correlated_with>>
+  }
+}
+
+' Relacje między wymaganiami funkcjonalnymi a niefunkcjonalnymi
+REQ_FUN_1 ..> NFR_PERF_1 : <<satisfies>>
+REQ_FUN_2 ..> NFR_SEC_1 : <<satisfies>>
+REQ_FUN_3 ..> NFR_AVAIL_1 : <<satisfies>>
+REQ_FUN_4 ..> NFR_REL_1 : <<satisfies>>
+REQ_FUN_1 ..> NFR_USE_1 : <<satisfies>>
+
+@enduml
