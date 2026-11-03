@@ -16,6 +16,7 @@
             --scancy-blue: #2196f3;
             --police-blue: #1e88e5;
             --stolen-red: #ff4d4d;
+            --success-green: #2ea44f;
         }
 
         * { box-sizing: border-box; }
@@ -193,6 +194,12 @@
             outline: none;
         }
 
+        .plate-input {
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
         .btn-submit {
             padding: 14px;
             border: none;
@@ -260,6 +267,45 @@
         }
         .photo-thumb:hover { transform: scale(1.15); }
 
+        .toast-container {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .toast {
+            background: rgba(22, 27, 34, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--panel-border);
+            border-left: 5px solid var(--scancy-blue);
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.92rem;
+            animation: toastIn 0.3s ease-out forwards;
+            min-width: 300px;
+            max-width: 450px;
+        }
+        .toast.success { border-left-color: var(--success-green); }
+        .toast.error { border-left-color: var(--stolen-red); }
+        .toast.info { border-left-color: var(--scancy-blue); }
+
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes toastOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -285,6 +331,67 @@
             cursor: pointer;
             font-weight: bold;
         }
+
+        /* SEKCJA LEGALNOŚCI WIDOCZNA TYLKO NA EKRANIE GŁÓWNYM */
+        .legal-box {
+            text-align: left;
+            background: rgba(22, 27, 34, 0.5);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 22px 28px;
+            margin-top: 40px;
+        }
+
+        .legal-box h3 {
+            color: var(--scancy-blue);
+            font-size: 0.95rem;
+            margin-top: 0;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .legal-box ul {
+            margin: 0;
+            padding-left: 20px;
+            line-height: 1.6;
+        }
+
+        .legal-box li {
+            margin-bottom: 10px;
+            font-size: 0.82rem;
+            color: #c9d1d9;
+        }
+
+        .legal-box li:last-child {
+            margin-bottom: 0;
+        }
+
+        .legal-box strong {
+            color: var(--text-main);
+        }
+
+        /* UNIWERSALNA STOPKA NA DOLE */
+        footer {
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 50px;
+            padding: 25px 0;
+            border-top: 1px solid var(--panel-border);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        footer p { margin: 4px 0; }
+        footer strong { color: var(--text-main); }
+        .disclaimer {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            max-width: 650px;
+            margin: 8px auto 0 auto !important;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -295,7 +402,7 @@
 
     <main class="container">
 
-        <!-- 1. EKRAN GŁÓWNY -->
+        <!-- 1. EKRAN GŁÓWNY (TUTAJ JEST SEKCJA LEGALNOŚĆ) -->
         <section id="view-home" class="view-tab active">
             <h1 style="font-size: 2.2rem; margin-bottom: 8px;">Wybierz moduł bazodanowy</h1>
             <p style="color: var(--text-muted); margin-bottom: 30px;">Zarządzaj nieoznakowanymi pojazdami służb oraz skradzionymi autami w systemie ScanCy.</p>
@@ -349,10 +456,20 @@
                     </div>
                 </div>
             </div>
+
+            <!-- BLOK LEGALNOŚCI TYLKO W VIEW-HOME -->
+            <div class="legal-box">
+                <h3>LEGALNOŚĆ I PODSTAWY PRAWNE</h3>
+                <ul>
+                    <li><strong>Tablice rejestracyjne a RODO:</strong> Zgodnie z orzecznictwem NSA (m.in. wyrok III OSK 1466/21) sam numer rejestracyjny nie stanowi danej osobowej dla przeciętnego obywatela nieposiadającego dostępu do bazy CEPiK. Ponadto nieoznakowane radiowozy stanowią mienie państwowe, a RODO chroni wyłącznie osoby fizyczne.</li>
+                    <li><strong>Fotografowanie w przestrzeni publicznej:</strong> Pojazdy znajdujące się na drogach publicznych mogą być legalnie fotografowane i publikowane (Art. 81 Ustawy o prawie autorskim). Ochronie podlega wyłącznie wizerunek osób fizycznych (twarze).</li>
+                    <li><strong>Społecznościowa wymiana informacji:</strong> Serwis pełni funkcję informacyjną (analogicznie do systemów Yanosik czy Waze). Nie narusza Art. 66 ust. 4 pkt 4 Prawa o ruchu drogowym, który zabrania używania fizycznych urządzeń zakłócających lub wykrywających pomiar prędkości (antyradarów).</li>
+                </ul>
+            </div>
         </section>
 
 
-        <!-- 2. WIDOK: DODAJ RADIOWÓZ (TYLKO FORMULARZ) -->
+        <!-- 2. WIDOK: DODAJ RADIOWÓZ -->
         <section id="view-radiowozy-form" class="view-tab">
             <button class="back-btn" onclick="openTab('home')">&larr; Powrót do pulpitu</button>
             
@@ -379,14 +496,14 @@
                     </div>
                     <div>
                         <label>Numer rejestracyjny</label>
-                        <input type="text" id="r_rejestracja" placeholder="np. KR 8AA15">
+                        <input type="text" id="r_rejestracja" class="plate-input" required placeholder="KR8AA15" oninput="formatLivePlate(this)">
                     </div>
                     <div>
                         <label>Opis / Cechy szczególne</label>
                         <input type="text" id="r_opis" placeholder="np. Oznaczenie 330i xDrive, ciemne szyby">
                     </div>
                     <div class="full-width">
-                        <label>Zdjęcia pojazdu (Maksymalnie 6 zdjęć):</label>
+                        <label>Zdjęcia pojazdu (Maksymalnie 6 zdjęć - auto kompresja do FHD):</label>
                         <input type="file" id="r_zdjecia" multiple accept="image/*" onchange="handleFileSelect(event, 'preview-radiowoz', filesRadiowoz)">
                         <div class="preview-container" id="preview-radiowoz"></div>
                     </div>
@@ -398,7 +515,7 @@
         </section>
 
 
-        <!-- 3. WIDOK: BAZA RADIOWOZÓW (TYLKO TABELA DANYCH) -->
+        <!-- 3. WIDOK: BAZA RADIOWOZÓW -->
         <section id="view-radiowozy-baza" class="view-tab">
             <button class="back-btn" onclick="openTab('home')">&larr; Powrót do pulpitu</button>
 
@@ -416,7 +533,7 @@
         </section>
 
 
-        <!-- 4. WIDOK: ZGŁOŚ SKRADZIONY POJAZD (TYLKO FORMULARZ) -->
+        <!-- 4. WIDOK: ZGŁOŚ SKRADZIONY POJAZD -->
         <section id="view-skradzione-form" class="view-tab">
             <button class="back-btn" onclick="openTab('home')">&larr; Powrót do pulpitu</button>
 
@@ -443,14 +560,14 @@
                     </div>
                     <div>
                         <label>Numer rejestracyjny</label>
-                        <input type="text" id="s_rejestracja" placeholder="np. KR 12345">
+                        <input type="text" id="s_rejestracja" class="plate-input" required placeholder="KR12345" oninput="formatLivePlate(this)">
                     </div>
                     <div>
                         <label>Rejon skradzenia / Opis</label>
                         <input type="text" id="s_opis" placeholder="np. Rysa na drzwiach, skradziono w Sidzinie">
                     </div>
                     <div class="full-width">
-                        <label>Zdjęcia pojazdu (Maksymalnie 6 zdjęć):</label>
+                        <label>Zdjęcia pojazdu (Maksymalnie 6 zdjęć - auto kompresja do FHD):</label>
                         <input type="file" id="s_zdjecia" multiple accept="image/*" onchange="handleFileSelect(event, 'preview-skradzione', filesSkradzione)">
                         <div class="preview-container" id="preview-skradzione"></div>
                     </div>
@@ -462,7 +579,7 @@
         </section>
 
 
-        <!-- 5. WIDOK: BAZA SKRADZIONYCH (TYLKO TABELA DANYCH) -->
+        <!-- 5. WIDOK: BAZA SKRADZIONYCH -->
         <section id="view-skradzione-baza" class="view-tab">
             <button class="back-btn" onclick="openTab('home')">&larr; Powrót do pulpitu</button>
 
@@ -481,7 +598,14 @@
 
     </main>
 
-    <!-- MODAL PEŁNEGO PODGLĄDU ZDJĘCIA -->
+    <!-- OGÓLNA STOPKA STRONY -->
+    <footer>
+        <p>© 2026 <strong>ScanCy</strong>. Wszelkie prawa zastrzeżone.</p>
+        <p class="disclaimer">Serwis ma charakter wyłącznie informacyjny i społecznościowy. Treści oraz zdjęcia pochodzą z dobrowolnych zgłoszeń użytkowników.</p>
+    </footer>
+
+    <div class="toast-container" id="toastContainer"></div>
+
     <div class="modal" id="imageModal" onclick="closeModal()">
         <span class="modal-close">&times;</span>
         <img id="modalImg" src="" alt="Podgląd zdjęcia">
@@ -496,25 +620,63 @@
         let filesRadiowoz = [];
         let filesSkradzione = [];
 
-        function openTab(target) {
+        function formatLivePlate(input) {
+            input.value = (input.value || '').replace(/\s+/g, '').toUpperCase();
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            let icon = 'ℹ️';
+            if (type === 'success') icon = '✅';
+            if (type === 'error') icon = '⚠️';
+
+            toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'toastOut 0.3s ease-in forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3800);
+        }
+
+        function openTab(target, pushToHistory = true) {
             document.querySelectorAll('.view-tab').forEach(tab => tab.classList.remove('active'));
 
             const view = document.getElementById(`view-${target}`);
-            if (view) {
-                view.classList.add('active');
-            }
+            if (view) view.classList.add('active');
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             if (target === 'radiowozy-baza') wczytajRadiowozy();
             if (target === 'skradzione-baza') wczytajSkradzione();
+
+            if (pushToHistory && history.state?.tab !== target) {
+                history.pushState({ tab: target }, '', `#${target}`);
+            }
         }
+
+        window.addEventListener('popstate', (e) => {
+            if (e.state && e.state.tab) {
+                openTab(e.state.tab, false);
+            } else {
+                openTab('home', false);
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const initialTab = location.hash.replace('#', '') || 'home';
+            history.replaceState({ tab: initialTab }, '', `#${initialTab}`);
+            openTab(initialTab, false);
+        });
 
         function handleFileSelect(event, containerId, targetArray) {
             const selected = Array.from(event.target.files);
             
             if (targetArray.length + selected.length > 6) {
-                alert("Możesz wybrać maksymalnie 6 zdjęć!");
+                showToast("Możesz wybrać maksymalnie 6 zdjęć!", "error");
                 return;
             }
 
@@ -581,7 +743,6 @@
             });
         }
 
-        // NAZWA BUCKETA Z PODKREŚLNIKIEM: pojazdy_zdjecia
         async function uploadPhotos(filesArray) {
             const uploadedUrls = [];
 
@@ -595,7 +756,7 @@
 
                 if (uploadError) {
                     console.error("Błąd wysyłania:", uploadError);
-                    alert("Błąd podczas wgrywania pliku: " + uploadError.message);
+                    showToast("Błąd przesyłania zdjęcia: " + uploadError.message, "error");
                     continue;
                 }
 
@@ -608,69 +769,159 @@
             return uploadedUrls;
         }
 
-        // FORMULARZ RADIOWÓZ
         document.getElementById('formRadiowoz').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnRadiowoz');
-            btn.innerText = "Kompresja zdjęć i zapisywanie...";
+            btn.innerText = "Sprawdzanie bazy...";
             btn.disabled = true;
 
-            const zdjeciaUrls = await uploadPhotos(filesRadiowoz);
+            const rejClean = document.getElementById('r_rejestracja').value;
 
-            const wpis = {
-                marka: document.getElementById('r_marka').value,
-                model: document.getElementById('r_model').value,
-                rok: parseInt(document.getElementById('r_rok').value) || null,
-                kolor: document.getElementById('r_kolor').value,
-                rejestracja: document.getElementById('r_rejestracja').value,
-                opis: document.getElementById('r_opis').value,
-                zdjecia: zdjeciaUrls
-            };
+            const { data: existing, error: fetchErr } = await db
+                .from('radiowozy')
+                .select('*')
+                .eq('rejestracja', rejClean)
+                .maybeSingle();
 
-            const { error } = await db.from('radiowozy').insert([wpis]);
-            btn.innerText = "Zapisz radiowóz w bazie";
-            btn.disabled = false;
+            if (fetchErr) {
+                showToast("Błąd bazy danych: " + fetchErr.message, "error");
+                btn.innerText = "Zapisz radiowóz w bazie";
+                btn.disabled = false;
+                return;
+            }
 
-            if (error) alert("Błąd: " + error.message);
-            else {
-                alert("Radiowóz dodany pomyślnie!");
-                document.getElementById('formRadiowoz').reset();
-                filesRadiowoz = [];
-                renderPreviews('preview-radiowoz', filesRadiowoz);
-                openTab('radiowozy-baza');
+            btn.innerText = "Kompresja i wgrywanie zdjęć...";
+            const noweVars = await uploadPhotos(filesRadiowoz);
+
+            if (existing) {
+                if (noweVars.length === 0) {
+                    showToast(`Pojazd ${rejClean} jest już w bazie! Wybierz zdjęcia, aby je dołączyć.`, "info");
+                    btn.innerText = "Zapisz radiowóz w bazie";
+                    btn.disabled = false;
+                    return;
+                }
+
+                const polaczoneZdjecia = [...(existing.zdjecia || []), ...noweVars];
+
+                const { error: updateErr } = await db
+                    .from('radiowozy')
+                    .update({ zdjecia: polaczoneZdjecia })
+                    .eq('id', existing.id);
+
+                btn.innerText = "Zapisz radiowóz w bazie";
+                btn.disabled = false;
+
+                if (updateErr) {
+                    showToast("Błąd aktualizacji zdjęć: " + updateErr.message, "error");
+                } else {
+                    showToast(`Dołączono zdjęcia do istniejącego pojazdu (${rejClean})!`, "success");
+                    document.getElementById('formRadiowoz').reset();
+                    filesRadiowoz = [];
+                    renderPreviews('preview-radiowoz', filesRadiowoz);
+                    openTab('radiowozy-baza');
+                }
+            } else {
+                const wpis = {
+                    marka: document.getElementById('r_marka').value,
+                    model: document.getElementById('r_model').value,
+                    rok: parseInt(document.getElementById('r_rok').value) || null,
+                    kolor: document.getElementById('r_kolor').value,
+                    rejestracja: rejClean,
+                    opis: document.getElementById('r_opis').value,
+                    zdjecia: noweVars
+                };
+
+                const { error: insertErr } = await db.from('radiowozy').insert([wpis]);
+                btn.innerText = "Zapisz radiowóz w bazie";
+                btn.disabled = false;
+
+                if (insertErr) {
+                    showToast("Błąd zapisywania: " + insertErr.message, "error");
+                } else {
+                    showToast(`Dodano nowy radiowóz (${rejClean}) do bazy!`, "success");
+                    document.getElementById('formRadiowoz').reset();
+                    filesRadiowoz = [];
+                    renderPreviews('preview-radiowoz', filesRadiowoz);
+                    openTab('radiowozy-baza');
+                }
             }
         });
 
-        // FORMULARZ SKRADZIONE
         document.getElementById('formSkradzione').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnSkradzione');
-            btn.innerText = "Kompresja zdjęć i zapisywanie...";
+            btn.innerText = "Sprawdzanie bazy...";
             btn.disabled = true;
 
-            const zdjeciaUrls = await uploadPhotos(filesSkradzione);
+            const rejClean = document.getElementById('s_rejestracja').value;
 
-            const wpis = {
-                marka: document.getElementById('s_marka').value,
-                model: document.getElementById('s_model').value,
-                rok: parseInt(document.getElementById('s_rok').value) || null,
-                kolor: document.getElementById('s_kolor').value,
-                rejestracja: document.getElementById('s_rejestracja').value,
-                opis: document.getElementById('s_opis').value,
-                zdjecia: zdjeciaUrls
-            };
+            const { data: existing, error: fetchErr } = await db
+                .from('skradzione')
+                .select('*')
+                .eq('rejestracja', rejClean)
+                .maybeSingle();
 
-            const { error } = await db.from('skradzione').insert([wpis]);
-            btn.innerText = "Zgłoś skradzione auto";
-            btn.disabled = false;
+            if (fetchErr) {
+                showToast("Błąd bazy danych: " + fetchErr.message, "error");
+                btn.innerText = "Zgłoś skradzione auto";
+                btn.disabled = false;
+                return;
+            }
 
-            if (error) alert("Błąd: " + error.message);
-            else {
-                alert("Zgłoszenie dodane pomyślnie!");
-                document.getElementById('formSkradzione').reset();
-                filesSkradzione = [];
-                renderPreviews('preview-skradzione', filesSkradzione);
-                openTab('skradzione-baza');
+            btn.innerText = "Kompresja i wgrywanie zdjęć...";
+            const noweVars = await uploadPhotos(filesSkradzione);
+
+            if (existing) {
+                if (noweVars.length === 0) {
+                    showToast(`Pojazd ${rejClean} znajduje się już w rejestrze! Dołącz nowe zdjęcia.`, "info");
+                    btn.innerText = "Zgłoś skradzione auto";
+                    btn.disabled = false;
+                    return;
+                }
+
+                const polaczoneZdjecia = [...(existing.zdjecia || []), ...noweVars];
+
+                const { error: updateErr } = await db
+                    .from('skradzione')
+                    .update({ zdjecia: polaczoneZdjecia })
+                    .eq('id', existing.id);
+
+                btn.innerText = "Zgłoś skradzione auto";
+                btn.disabled = false;
+
+                if (updateErr) {
+                    showToast("Błąd aktualizacji: " + updateErr.message, "error");
+                } else {
+                    showToast(`Dołączono zdjęcia do rejestru pojazdu (${rejClean})!`, "success");
+                    document.getElementById('formSkradzione').reset();
+                    filesSkradzione = [];
+                    renderPreviews('preview-skradzione', filesSkradzione);
+                    openTab('skradzione-baza');
+                }
+            } else {
+                const wpis = {
+                    marka: document.getElementById('s_marka').value,
+                    model: document.getElementById('s_model').value,
+                    rok: parseInt(document.getElementById('s_rok').value) || null,
+                    kolor: document.getElementById('s_kolor').value,
+                    rejestracja: rejClean,
+                    opis: document.getElementById('s_opis').value,
+                    zdjecia: noweVars
+                };
+
+                const { error: insertErr } = await db.from('skradzione').insert([wpis]);
+                btn.innerText = "Zgłoś skradzione auto";
+                btn.disabled = false;
+
+                if (insertErr) {
+                    showToast("Błąd zapisywania: " + insertErr.message, "error");
+                } else {
+                    showToast(`Zgłoszono skradziony pojazd (${rejClean})!`, "success");
+                    document.getElementById('formSkradzione').reset();
+                    filesSkradzione = [];
+                    renderPreviews('preview-skradzione', filesSkradzione);
+                    openTab('skradzione-baza');
+                }
             }
         });
 
@@ -705,7 +956,7 @@
                         <td>${auto.model || ''}</td>
                         <td>${auto.rok || ''}</td>
                         <td>${auto.kolor || ''}</td>
-                        <td>${auto.rejestracja || ''}</td>
+                        <td><strong>${auto.rejestracja || ''}</strong></td>
                         <td>${auto.opis || ''}</td>
                     </tr>
                 `;
