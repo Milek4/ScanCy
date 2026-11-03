@@ -1,0 +1,91 @@
+@startuml
+skinparam linetype ortho
+hide methods
+hide stereotypes
+
+title ScanCy Diagram ERD
+
+entity "User" {
+    + id : String <<PK>>
+    --
+    username : String <<UNIQUE>>
+    email : String <<UNIQUE>>
+    password_hash : String
+    created_at : DateTime
+}
+
+entity "ScanJob" {
+    + id : String <<PK>>
+    --
+    user_id : String <<FK>>
+    target_url : String
+    status : String
+    created_at : DateTime
+    started_at : DateTime
+    finished_at : DateTime
+}
+
+entity "VulnerabilityRule" {
+    + id : String <<PK>>
+    --
+    rule_key : String <<UNIQUE>>
+    name : String
+    description : Text
+    default_severity : String
+    category : String
+}
+
+entity "VulnerabilityResult" {
+    + id : String <<PK>>
+    --
+    scan_job_id : String <<FK>>
+    rule_id : String <<FK>>
+    severity : String
+    file_path : String
+    line_number : Integer
+    description : Text
+}
+
+entity "Report" {
+    + id : String <<PK>>
+    --
+    scan_job_id : String <<FK>>
+    format : String
+    file_path : String
+    generated_at : DateTime
+}
+
+User ||--o{ ScanJob : "inicjuje"
+
+ScanJob ||--o{ VulnerabilityResult : "zawiera"
+
+VulnerabilityRule ||--o{ VulnerabilityResult : "identyfikuje"
+
+ScanJob ||--o{ Report : "generuje"
+
+note right of ScanJob
+  Możliwe statusy:
+  PENDING 
+  RUNNING 
+  COMPLETED 
+  FAILED 
+  CANCELLED 
+end note
+
+note right of VulnerabilityResult
+  Możliwe poziomy severity:
+  CRITICAL 
+  HIGH 
+  MEDIUM 
+  LOW 
+  INFO 
+end note
+
+note right of Report
+  Możliwe formaty:
+  PDF
+  JSON
+  HTML
+end note
+
+@enduml
