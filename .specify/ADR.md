@@ -11,7 +11,7 @@ Rejestr kluczowych ustaleń technicznych w projekcie **ScanCy**.
 
 ---
 
-<a id = adr-01> ADR-01: Wybór Pythona na główny język programowania</a> 
+## <a id = adr-01> ADR-01: Wybór Pythona na główny język programowania</a> 
 
 * **Status:** Zaakceptowany | **Data:** 2026-10-26 
 
@@ -29,7 +29,7 @@ Wybieramy **Python**, ponieważ zaweira on biblioteki pozwalające przetwarzać 
 
 ---
 
-<a id="adr-02">ADR-02: Zastosowanie SQL w projektowaniu bazy danych</a>
+## <a id="adr-02">ADR-02: Zastosowanie SQL w projektowaniu bazy danych</a>
 
 * **Status:** Zaakceptowany | **Data:** 2026-10-27 
 
@@ -47,7 +47,7 @@ Wybieramy **SQL** ze względu na jego niezawodność i powszechne wsparcie wraz 
 
 ---
 <!-- Schemat decyzji
-<a id="adr-N">ADR-N: [TYTUŁ] </a>
+## <a id="adr-N">ADR-N: [TYTUŁ] </a>
 
 * **Status:**  | **Data:** 
 
