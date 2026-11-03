@@ -1,0 +1,42 @@
+
+@startuml
+left to right direction
+
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam roundcorner 20
+
+title "ScanCy Diagram DFD"
+
+' Encja zewnętrzna
+rectangle "Użytkownik" as User
+
+' Procesy
+rectangle "1.0\nWczytywanie plików\ni specyfikacji" as P1
+rectangle "2.0\nAnaliza i skanowanie" as P2
+rectangle "3.0\nGenerowanie raportów" as P3
+
+' Magazyn danych
+database "D1\nBaza danych\n(wyniki i historia)" as DB
+
+' Przepływy danych
+User --> P1 : Pliki i dane wejściowe
+
+P1 --> P2 : Zweryfikowane dane\ni specyfikacje
+
+P2 --> DB : Wyniki skanowania\ni historia
+
+DB --> P2 : Poprzednie wyniki\ni historia skanowań
+
+P2 --> P3 : Aktualne wyniki analizy
+
+DB --> P3 : Zapisane wyniki\ni historia skanowań
+
+P3 --> User : Raporty i historia skanowań
+
+P1 --> User : Informacje o błędach wczytywania
+
+P2 --> User : Status skanowania i błędy analizy
+
+@enduml
