@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScanCy - System Zgłoszeń</title>
+    <title>ScanCy</title>
     <!-- Biblioteka Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -181,6 +181,12 @@
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
+
+        @media (max-width: 600px) {
+            form { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+        }
+
         .full-width { grid-column: span 2; }
 
         label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
@@ -212,9 +218,23 @@
         .btn-police { background: var(--police-blue); }
         .btn-stolen { background: var(--stolen-red); }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+            border: 1px solid var(--panel-border);
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            min-width: 650px;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--panel-border); vertical-align: middle; }
-        th { color: var(--text-muted); background: rgba(255,255,255,0.02); }
+        th { color: var(--text-muted); background: rgba(255,255,255,0.02); white-space: nowrap; }
 
         .preview-container {
             display: flex;
@@ -290,7 +310,7 @@
             gap: 12px;
             font-size: 0.92rem;
             animation: toastIn 0.3s ease-out forwards;
-            min-width: 300px;
+            min-width: 280px;
             max-width: 450px;
         }
         .toast.success { border-left-color: var(--success-green); }
@@ -306,33 +326,90 @@
             to { transform: translateX(100%); opacity: 0; }
         }
 
+        /* STYLISTYKA INTERAKTYWNEJ GALERII MODAL */
         .modal {
             display: none;
             position: fixed;
             z-index: 1000;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
             align-items: center;
             justify-content: center;
+            user-select: none;
+            touch-action: pan-y;
         }
+        
+        .modal-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+
         .modal img {
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 85vw;
+            max-height: 75vh;
             border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            object-fit: contain;
         }
+
         .modal-close {
             position: absolute;
-            top: 25px; right: 35px;
+            top: 20px; right: 25px;
             color: #fff;
             font-size: 35px;
             cursor: pointer;
             font-weight: bold;
+            z-index: 1010;
         }
 
-        /* SEKCJA LEGALNOŚCI WIDOCZNA TYLKO NA EKRANIE GŁÓWNYM */
+        .modal-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(22, 27, 34, 0.8);
+            color: #fff;
+            border: 1px solid var(--panel-border);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1010;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .modal-arrow:hover {
+            background: var(--scancy-blue);
+            transform: translateY(-50%) scale(1.1);
+        }
+        .modal-arrow.prev { left: 20px; }
+        .modal-arrow.next { right: 20px; }
+
+        @media (max-width: 600px) {
+            .modal-arrow.prev { left: 10px; width: 40px; height: 40px; }
+            .modal-arrow.next { right: 10px; width: 40px; height: 40px; }
+        }
+
+        .modal-counter {
+            margin-top: 14px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         .legal-box {
             text-align: left;
             background: rgba(22, 27, 34, 0.5);
@@ -372,7 +449,6 @@
             color: var(--text-main);
         }
 
-        /* UNIWERSALNA STOPKA NA DOLE */
         footer {
             width: 100%;
             max-width: 1100px;
@@ -402,10 +478,10 @@
 
     <main class="container">
 
-        <!-- 1. EKRAN GŁÓWNY (TUTAJ JEST SEKCJA LEGALNOŚĆ) -->
+        <!-- 1. EKRAN GŁÓWNY -->
         <section id="view-home" class="view-tab active">
             <h1 style="font-size: 2.2rem; margin-bottom: 8px;">Wybierz moduł bazodanowy</h1>
-            <p style="color: var(--text-muted); margin-bottom: 30px;">Zarządzaj nieoznakowanymi pojazdami służb oraz skradzionymi autami w systemie ScanCy.</p>
+            <p style="color: var(--text-muted); margin-bottom: 30px;">Zarządzaj nieoznakowanymi pojazdami służb oraz skradzionymi samochodami w systemie ScanCy.</p>
 
             <div class="tiles-grid">
                 <div class="tile-card tile-police" onclick="openTab('radiowozy-form')">
@@ -423,8 +499,8 @@
                 <div class="tile-card tile-stolen" onclick="openTab('skradzione-form')">
                     <div>
                         <div class="tile-tag">Formularz Poszukiwań</div>
-                        <h2>Zgłoś skradziony pojazd</h2>
-                        <p>Zgłoś skradzione auto do rejestru poszukiwań wraz z opisem i zdjęciami pojazdu.</p>
+                        <h2>Zgłoś skradziony samochód</h2>
+                        <p>Zgłoś skradziony samochód do rejestru poszukiwań wraz z opisem i zdjęciami pojazdu.</p>
                     </div>
                     <div class="tile-footer-action">
                         <span>Otwórz formularz</span>
@@ -448,7 +524,7 @@
                     <div>
                         <div class="tile-tag">Baza Poszukiwań</div>
                         <h2>Aktualna Baza Skradzionych</h2>
-                        <p>Przeglądaj pełny rejestr pojazdów poszukiwanych z fotografiami i rysopisem.</p>
+                        <p>Przeglądaj pełny rejestr poszukiwanych samochodów z fotografiami i rysopisem.</p>
                     </div>
                     <div class="tile-footer-action">
                         <span>Przeglądaj bazę</span>
@@ -457,7 +533,7 @@
                 </div>
             </div>
 
-            <!-- BLOK LEGALNOŚCI TYLKO W VIEW-HOME -->
+            <!-- BLOK LEGALNOŚCI -->
             <div class="legal-box">
                 <h3>LEGALNOŚĆ I PODSTAWY PRAWNE</h3>
                 <ul>
@@ -503,8 +579,8 @@
                         <input type="text" id="r_opis" placeholder="np. Oznaczenie 330i xDrive, ciemne szyby">
                     </div>
                     <div class="full-width">
-                        <label>Zdjęcia pojazdu (Maksymalnie 6 zdjęć - auto kompresja do FHD):</label>
-                        <input type="file" id="r_zdjecia" multiple accept="image/*" onchange="handleFileSelect(event, 'preview-radiowoz', filesRadiowoz)">
+                        <label>Zdjęcia pojazdu (Maksymalnie 6 plików graficznych - kompresja do FHD):</label>
+                        <input type="file" id="r_zdjecia" multiple accept="image/png, image/jpeg, image/webp, image/heic" onchange="handleFileSelect(event, 'preview-radiowoz', filesRadiowoz)">
                         <div class="preview-container" id="preview-radiowoz"></div>
                     </div>
                     <div class="full-width">
@@ -523,23 +599,25 @@
                 <div class="panel-header">
                     <h2>Baza nieoznakowanych radiowozów</h2>
                 </div>
-                <table id="tabelaRadiowozy">
-                    <thead>
-                        <tr><th>Zdjęcia</th><th>Marka</th><th>Model</th><th>Rok</th><th>Kolor</th><th>Rejestracja</th><th>Opis</th></tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="table-container">
+                    <table id="tabelaRadiowozy">
+                        <thead>
+                            <tr><th>Zdjęcia</th><th>Marka</th><th>Model</th><th>Rok</th><th>Kolor</th><th>Rejestracja</th><th>Opis</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
 
-        <!-- 4. WIDOK: ZGŁOŚ SKRADZIONY POJAZD -->
+        <!-- 4. WIDOK: ZGŁOŚ SKRADZIONY SAMOCHÓD -->
         <section id="view-skradzione-form" class="view-tab">
             <button class="back-btn" onclick="openTab('home')">&larr; Powrót do pulpitu</button>
 
             <div class="panel">
                 <div class="panel-header">
-                    <h2 style="color: #ff6b6b;">Zgłoś skradziony pojazd</h2>
+                    <h2 style="color: #ff6b6b;">Zgłoś skradziony samochód</h2>
                 </div>
                 <form id="formSkradzione">
                     <div>
@@ -567,12 +645,12 @@
                         <input type="text" id="s_opis" placeholder="np. Rysa na drzwiach, skradziono w Sidzinie">
                     </div>
                     <div class="full-width">
-                        <label>Zdjęcia pojazdu (Maksymalnie 6 zdjęć - auto kompresja do FHD):</label>
-                        <input type="file" id="s_zdjecia" multiple accept="image/*" onchange="handleFileSelect(event, 'preview-skradzione', filesSkradzione)">
+                        <label>Zdjęcia samochodu (Maksymalnie 6 plików graficznych - kompresja do FHD):</label>
+                        <input type="file" id="s_zdjecia" multiple accept="image/png, image/jpeg, image/webp, image/heic" onchange="handleFileSelect(event, 'preview-skradzione', filesSkradzione)">
                         <div class="preview-container" id="preview-skradzione"></div>
                     </div>
                     <div class="full-width">
-                        <button type="submit" class="btn-submit btn-stolen" id="btnSkradzione">Zgłoś skradzione auto</button>
+                        <button type="submit" class="btn-submit btn-stolen" id="btnSkradzione">Zgłoś skradziony samochód</button>
                     </div>
                 </form>
             </div>
@@ -585,20 +663,21 @@
 
             <div class="panel">
                 <div class="panel-header">
-                    <h2>Rejestr skradzionych pojazdów</h2>
+                    <h2>Rejestr skradzionych samochodów</h2>
                 </div>
-                <table id="tabelaSkradzione">
-                    <thead>
-                        <tr><th>Zdjęcia</th><th>Marka</th><th>Model</th><th>Rok</th><th>Kolor</th><th>Rejestracja</th><th>Opis</th></tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="table-container">
+                    <table id="tabelaSkradzione">
+                        <thead>
+                            <tr><th>Zdjęcia</th><th>Marka</th><th>Model</th><th>Rok</th><th>Kolor</th><th>Rejestracja</th><th>Opis</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
     </main>
 
-    <!-- OGÓLNA STOPKA STRONY -->
     <footer>
         <p>© 2026 <strong>ScanCy</strong>. Wszelkie prawa zastrzeżone.</p>
         <p class="disclaimer">Serwis ma charakter wyłącznie informacyjny i społecznościowy. Treści oraz zdjęcia pochodzą z dobrowolnych zgłoszeń użytkowników.</p>
@@ -606,9 +685,15 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- MODAL GALERII ZE STRZAŁKAMI ORAZ OBSŁUGĄ GESTÓW -->
     <div class="modal" id="imageModal" onclick="closeModal()">
-        <span class="modal-close">&times;</span>
-        <img id="modalImg" src="" alt="Podgląd zdjęcia">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <button class="modal-arrow prev" id="modalPrev" onclick="prevImage(event)">&#10094;</button>
+        <div class="modal-wrapper" onclick="event.stopPropagation()">
+            <img id="modalImg" src="" alt="Zdjęcie samochodu">
+            <div class="modal-counter" id="modalCounter"></div>
+        </div>
+        <button class="modal-arrow next" id="modalNext" onclick="nextImage(event)">&#10095;</button>
     </div>
 
     <script>
@@ -619,6 +704,13 @@
 
         let filesRadiowoz = [];
         let filesSkradzione = [];
+        window.bazaData = {};
+
+        // STAN INTERAKTYWNEJ GALERII
+        let currentGallery = [];
+        let currentGalleryIndex = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
 
         function formatLivePlate(input) {
             input.value = (input.value || '').replace(/\s+/g, '').toUpperCase();
@@ -675,12 +767,17 @@
         function handleFileSelect(event, containerId, targetArray) {
             const selected = Array.from(event.target.files);
             
-            if (targetArray.length + selected.length > 6) {
+            const validImages = selected.filter(file => file.type.startsWith('image/'));
+            if (validImages.length < selected.length) {
+                showToast("Możesz dodawać wyłącznie pliki graficzne (zdjęcia)!", "error");
+            }
+
+            if (targetArray.length + validImages.length > 6) {
                 showToast("Możesz wybrać maksymalnie 6 zdjęć!", "error");
                 return;
             }
 
-            selected.forEach(file => targetArray.push(file));
+            validImages.forEach(file => targetArray.push(file));
             renderPreviews(containerId, targetArray);
             event.target.value = '';
         }
@@ -863,7 +960,7 @@
 
             if (fetchErr) {
                 showToast("Błąd bazy danych: " + fetchErr.message, "error");
-                btn.innerText = "Zgłoś skradzione auto";
+                btn.innerText = "Zgłoś skradziony samochód";
                 btn.disabled = false;
                 return;
             }
@@ -873,8 +970,8 @@
 
             if (existing) {
                 if (noweVars.length === 0) {
-                    showToast(`Pojazd ${rejClean} znajduje się już w rejestrze! Dołącz nowe zdjęcia.`, "info");
-                    btn.innerText = "Zgłoś skradzione auto";
+                    showToast(`Samochód ${rejClean} znajduje się już w rejestrze! Dołącz nowe zdjęcia.`, "info");
+                    btn.innerText = "Zgłoś skradziony samochód";
                     btn.disabled = false;
                     return;
                 }
@@ -886,13 +983,13 @@
                     .update({ zdjecia: polaczoneZdjecia })
                     .eq('id', existing.id);
 
-                btn.innerText = "Zgłoś skradzione auto";
+                btn.innerText = "Zgłoś skradziony samochód";
                 btn.disabled = false;
 
                 if (updateErr) {
                     showToast("Błąd aktualizacji: " + updateErr.message, "error");
                 } else {
-                    showToast(`Dołączono zdjęcia do rejestru pojazdu (${rejClean})!`, "success");
+                    showToast(`Dołączono zdjęcia do rejestru samochodu (${rejClean})!`, "success");
                     document.getElementById('formSkradzione').reset();
                     filesSkradzione = [];
                     renderPreviews('preview-skradzione', filesSkradzione);
@@ -910,13 +1007,13 @@
                 };
 
                 const { error: insertErr } = await db.from('skradzione').insert([wpis]);
-                btn.innerText = "Zgłoś skradzione auto";
+                btn.innerText = "Zgłoś skradziony samochód";
                 btn.disabled = false;
 
                 if (insertErr) {
                     showToast("Błąd zapisywania: " + insertErr.message, "error");
                 } else {
-                    showToast(`Zgłoszono skradziony pojazd (${rejClean})!`, "success");
+                    showToast(`Zgłoszono skradziony samochód (${rejClean})!`, "success");
                     document.getElementById('formSkradzione').reset();
                     filesSkradzione = [];
                     renderPreviews('preview-skradzione', filesSkradzione);
@@ -927,11 +1024,13 @@
 
         async function wczytajRadiowozy() {
             const { data } = await db.from('radiowozy').select('*').order('created_at', { ascending: false });
+            window.bazaData['tabelaRadiowozy'] = data || [];
             wypelnijTabele('tabelaRadiowozy', data);
         }
 
         async function wczytajSkradzione() {
             const { data } = await db.from('skradzione').select('*').order('created_at', { ascending: false });
+            window.bazaData['tabelaSkradzione'] = data || [];
             wypelnijTabele('tabelaSkradzione', data);
         }
 
@@ -939,12 +1038,13 @@
             const tbody = document.querySelector(`#${elementId} tbody`);
             tbody.innerHTML = '';
             if (!dane) return;
-            dane.forEach(auto => {
+
+            dane.forEach((auto, carIndex) => {
                 let galeriaHtml = '-';
                 if (auto.zdjecia && auto.zdjecia.length > 0) {
                     galeriaHtml = '<div class="photo-gallery">';
-                    auto.zdjecia.forEach(url => {
-                        galeriaHtml += `<img src="${url}" class="photo-thumb" onclick="openModal('${url}')" alt="Pojazd">`;
+                    auto.zdjecia.forEach((url, imgIndex) => {
+                        galeriaHtml += `<img src="${url}" class="photo-thumb" onclick="openGalleryModal('${elementId}', ${carIndex}, ${imgIndex})" alt="Samochód">`;
                     });
                     galeriaHtml += '</div>';
                 }
@@ -963,14 +1063,90 @@
             });
         }
 
-        function openModal(url) {
-            document.getElementById('modalImg').src = url;
+        // FUNKCJE OBSŁUGI INTEGRALNEJ GALERII
+        function openGalleryModal(tableId, carIndex, imgIndex) {
+            const auto = window.bazaData[tableId]?.[carIndex];
+            if (!auto || !auto.zdjecia || auto.zdjecia.length === 0) return;
+
+            currentGallery = auto.zdjecia;
+            currentGalleryIndex = imgIndex;
+
+            updateModalView();
             document.getElementById('imageModal').style.display = 'flex';
+        }
+
+        function updateModalView() {
+            const img = document.getElementById('modalImg');
+            const counter = document.getElementById('modalCounter');
+            const prevBtn = document.getElementById('modalPrev');
+            const nextBtn = document.getElementById('modalNext');
+
+            img.src = currentGallery[currentGalleryIndex];
+            counter.innerText = `${currentGalleryIndex + 1} / ${currentGallery.length}`;
+
+            if (currentGallery.length > 1) {
+                prevBtn.style.display = 'flex';
+                nextBtn.style.display = 'flex';
+                counter.style.display = 'block';
+            } else {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+                counter.style.display = 'none';
+            }
+        }
+
+        function prevImage(e) {
+            if (e) e.stopPropagation();
+            if (currentGallery.length <= 1) return;
+            currentGalleryIndex = (currentGalleryIndex - 1 + currentGallery.length) % currentGallery.length;
+            updateModalView();
+        }
+
+        function nextImage(e) {
+            if (e) e.stopPropagation();
+            if (currentGallery.length <= 1) return;
+            currentGalleryIndex = (currentGalleryIndex + 1) % currentGallery.length;
+            updateModalView();
         }
 
         function closeModal() {
             document.getElementById('imageModal').style.display = 'none';
         }
+
+        // NAWIGACJA KLAWISZAMI NA KOMPUTERZE
+        window.addEventListener('keydown', (e) => {
+            const modal = document.getElementById('imageModal');
+            if (modal.style.display === 'flex') {
+                if (e.key === 'ArrowRight') nextImage();
+                if (e.key === 'ArrowLeft') prevImage();
+                if (e.key === 'Escape') closeModal();
+            }
+        });
+
+        // NAWIGACJA GESTAMI SWIPE NA TELEFONIE
+        const modalElem = document.getElementById('imageModal');
+
+        modalElem.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        modalElem.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].screenX;
+            const touchEndY = e.changedTouches[0].screenY;
+
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+
+            // Upewniamy się, że ruch jest gestem poziomym
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
+                if (diffX < 0) {
+                    nextImage();
+                } else {
+                    prevImage();
+                }
+            }
+        }, { passive: true });
     </script>
 </body>
 </html>
