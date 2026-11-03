@@ -1,0 +1,46 @@
+@startuml
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam roundcorner 10
+
+title "ScanCy UML Sequence Diagram"
+
+actor "Użytkownik" as User
+participant "P1: Wczytywanie plików" as P1
+participant "P2: Analiza i skanowanie" as P2
+database "D1: Baza danych" as DB
+participant "P3: Generowanie raportów" as P3
+
+autonumber
+
+== Wczytywanie danych ==
+User -> P1: Przesyła pliki i dane wejściowe
+alt Błąd wczytywania
+    P1 --> User: Informacja o błędzie wczytywania
+else Dane poprawne
+    P1 -> P2: Przekazuje zweryfikowane dane i specyfikacje
+end
+
+== Skanowanie i Analiza ==
+P2 -> DB: Pobiera poprzednie wyniki i historię
+DB --> P2: Zwraca dane historyczne
+P2 -> P2: Wykonuje analizę i skanowanie
+
+alt Błąd analizy
+    P2 --> User: Status skanowania lub błąd analizy
+else Sukces analizy
+    P2 -> DB: Zapisuje aktualne wyniki i historię
+    P2 -> P3: Przekazuje wyniki analizy
+end
+
+== Generowanie Raportu ==
+P3 -> DB: Pobiera zapisane wyniki i historię
+DB --> P3: Zwraca dane do zestawienia
+
+alt Błąd generowania raportu
+    P3 --> User: Informacja o błędzie generowania raportu
+else Sukces raportu
+    P3 --> User: Przekazuje wygenerowany raport i historię skanowań
+end
+
+@enduml
