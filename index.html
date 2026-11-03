@@ -3,132 +3,563 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScanCy - Rejestr Pojazdów</title>
+    <title>ScanCy - System Zgłoszeń</title>
     <!-- Biblioteka Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 20px; background: #121212; color: #e0e0e0; }
-        h1, h2 { color: #4dabf7; }
-        .card { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        :root {
+            --bg-main: #0d1117;
+            --panel-bg: rgba(22, 27, 34, 0.85);
+            --panel-border: #30363d;
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+            --scancy-blue: #2196f3;
+            --police-blue: #1e88e5;
+            --stolen-red: #ff4d4d;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .logo {
+            font-size: 2.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            user-select: none;
+        }
+        .logo span { color: var(--scancy-blue); }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .view-tab {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .view-tab.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tiles-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .tiles-grid { grid-template-columns: 1fr; }
+        }
+
+        .tile-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 440px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .tile-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+        }
+
+        .tile-police:hover { border-color: var(--police-blue); }
+        .tile-stolen:hover { border-color: var(--stolen-red); }
+
+        .tile-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            width: fit-content;
+            margin-bottom: 25px;
+        }
+        .tile-police .tile-tag { background: rgba(30, 136, 229, 0.15); color: #64b5f6; }
+        .tile-stolen .tile-tag { background: rgba(255, 77, 77, 0.15); color: #ff6b6b; }
+
+        .tile-card h2 {
+            font-size: 1.9rem;
+            margin: 0 0 14px 0;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .tile-card p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .tile-footer-action {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 20px;
+        }
+        .tile-police .tile-footer-action { color: #64b5f6; }
+        .tile-stolen .tile-footer-action { color: #ff6b6b; }
+
+        .back-btn {
+            background: #161b22;
+            border: 1px solid var(--panel-border);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            transition: background 0.2s;
+        }
+        .back-btn:hover { background: #21262d; }
+
+        .panel {
+            background: var(--panel-bg);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid var(--panel-border);
+            margin-bottom: 25px;
+        }
+
+        .panel-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 10px;
+        }
+        .panel-header h2 { margin: 0; font-size: 1.4rem; }
+
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
         .full-width { grid-column: span 2; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; }
-        button { background: #007bff; color: white; padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0056b3; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #333; padding: 10px; text-align: left; }
-        th { background-color: #2a2a2a; color: #4dabf7; }
+
+        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+        input[type="text"], input[type="number"], input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            background: #0d1117;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            color: #fff;
+            outline: none;
+        }
+        input:focus { border-color: var(--scancy-blue); }
+
+        .btn-submit {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #fff;
+            width: 100%;
+        }
+        .btn-police { background: var(--police-blue); }
+        .btn-stolen { background: var(--stolen-red); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--panel-border); vertical-align: top; }
+        th { color: var(--text-muted); background: rgba(255,255,255,0.02); }
+
+        /* GALERIA MINIATUREK W TABELI */
+        .photo-gallery {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .photo-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--panel-border);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .photo-thumb:hover { transform: scale(1.15); }
     </style>
 </head>
 <body>
 
-    <h1>ScanCy - Rejestr Pojazdów</h1>
+    <header>
+        <div class="logo" onclick="openTab('home')">Scan<span>Cy</span></div>
+    </header>
 
-    <!-- FORMULARZ ZGŁOSZENIOWY -->
-    <div class="card">
-        <h2>Dodaj Zgłoszenie</h2>
-        <form id="vehicleForm">
-            <div>
-                <label>Typ zgłoszenia:</label>
-                <select id="typ" onchange="toggleFormFields()">
-                    <option value="radiowozy">Nieoznakowany Radiowóz</option>
-                    <option value="skradzione">Pojazd Skradziony</option>
-                </select>
-            </div>
-            <div>
-                <label>Marka:</label>
-                <input type="text" id="marka" required placeholder="np. Kia">
-            </div>
-            <div>
-                <label>Model:</label>
-                <input type="text" id="model" required placeholder="np. Ceed">
-            </div>
-            <div>
-                <label>Rok produkcji:</label>
-                <input type="number" id="rok" placeholder="np. 2021">
-            </div>
-            <div>
-                <label>Kolor:</label>
-                <input type="text" id="kolor" placeholder="np. Czarny">
-            </div>
-            <div>
-                <label>Nr Rejestracyjny:</label>
-                <input type="text" id="rejestracja" placeholder="np. KR 12345">
-            </div>
-            <div class="full-width">
-                <label>Opis / Cechy szczególne:</label>
-                <textarea id="opis" rows="3" placeholder="np. ciemne szyby, uszkodzony zderzak"></textarea>
-            </div>
-            <div class="full-width">
-                <button type="submit">Wyślij Zgłoszenie</button>
-            </div>
-        </form>
-    </div>
+    <main class="container">
 
-    <!-- WIDOK DANYCH z BAZY -->
-    <div class="card">
-        <h2>Nieoznakowane Radiowozy</h2>
-        <table id="tabelaRadiowozy">
-            <thead>
-                <tr><th>Marka</th><th>Model</th><th>Rok</th><th>Kolor</th><th>Rejestracja</th><th>Opis</th></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+        <!-- 1. EKRAN GŁÓWNY -->
+        <section id="view-home" class="view-tab active">
+            <h1 style="font-size: 2.2rem; margin-bottom: 8px;">Wybierz moduł bazodanowy</h1>
+            <p style="color: var(--text-muted); margin-bottom: 30px;">Zarządzaj nieoznakowanymi pojazdami służb oraz skradzionymi autami w systemie ScanCy.</p>
 
-    <div class="card">
-        <h2>Skradzione Pojazdy</h2>
-        <table id="tabelaSkradzione">
-            <thead>
-                <tr><th>Marka</th><th>Model</th><th>Rok</th><th>Kolor</th><th>Rejestracja</th><th>Opis</th></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+            <div class="tiles-grid">
+                <div class="tile-card tile-police" onclick="openTab('radiowozy-form')">
+                    <div>
+                        <div class="tile-tag">Formularz Zgłoszeniowy</div>
+                        <h2>Dodaj nieoznakowany radiowóz</h2>
+                        <p>Wprowadź nowy pojazd nieoznakowany (marka, model, kolor, rejestracja, zdjęcia) do bazy służb.</p>
+                    </div>
+                    <div class="tile-footer-action">
+                        <span>Otwórz formularz</span>
+                        <span>&rarr;</span>
+                    </div>
+                </div>
+
+                <div class="tile-card tile-stolen" onclick="openTab('skradzione-form')">
+                    <div>
+                        <div class="tile-tag">Formularz Poszukiwań</div>
+                        <h2>Zgłoś skradziony pojazd</h2>
+                        <p>Zgłoś skradzione auto do rejestru poszukiwań wraz z opisem i zdjęciami pojazdu.</p>
+                    </div>
+                    <div class="tile-footer-action">
+                        <span>Otwórz formularz</span>
+                        <span>&rarr;</span>
+                    </div>
+                </div>
+
+                <div class="tile-card tile-police" onclick="openTab('radiowozy-baza')">
+                    <div>
+                        <div class="tile-tag">Baza Patrolowa</div>
+                        <h2>Aktualna Baza Radiowozów</h2>
+                        <p>Przeglądaj pełny rejestr zgłoszonych pojazdów nieoznakowanych wraz z galeriami zdjęć.</p>
+                    </div>
+                    <div class="tile-footer-action">
+                        <span>Przeglądaj bazę</span>
+                        <span>&rarr;</span>
+                    </div>
+                </div>
+
+                <div class="tile-card tile-stolen" onclick="openTab('skradzione-baza')">
+                    <div>
+                        <div class="tile-tag">Baza Poszukiwań</div>
+                        <h2>Aktualna Baza Skradzionych</h2>
+                        <p>Przeglądaj pełny rejestr pojazdów poszukiwanych z fotografiami i rysopisem.</p>
+                    </div>
+                    <div class="tile-footer-action">
+                        <span>Przeglądaj bazę</span>
+                        <span>&rarr;</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 2. WIDOK: RADIOWOZY -->
+        <section id="view-radiowozy" class="view-tab">
+            <button class="back-btn" onclick="openTab('home')">&larr; Powrót do pulpitu</button>
+            
+            <div class="panel" id="sec-radiowozy-form">
+                <div class="panel-header">
+                    <h2 style="color: #64b5f6;">Dodaj nieoznakowany radiowóz</h2>
+                </div>
+                <form id="formRadiowoz">
+                    <div>
+                        <label>Marka</label>
+                        <input type="text" id="r_marka" required placeholder="np. BMW">
+                    </div>
+                    <div>
+                        <label>Model</label>
+                        <input type="text" id="r_model" required placeholder="np. Seria 3 GT">
+                    </div>
+                    <div>
+                        <label>Rok produkcji</label>
+                        <input type="number" id="r_rok" placeholder="np. 2018">
+                    </div>
+                    <div>
+                        <label>Kolor</label>
+                        <input type="text" id="r_kolor" placeholder="np. Czarny">
+                    </div>
+                    <div>
+                        <label>Numer rejestracyjny</label>
+                        <input type="text" id="r_rejestracja" placeholder="np. KR 8AA15">
+                    </div>
+                    <div>
+                        <label>Opis / Cechy szczególne</label>
+                        <input type="text" id="r_opis" placeholder="np. Oznaczenie 330i xDrive, ciemne szyby">
+                    </div>
+                    <div class="full-width">
+                        <label>Zdjęcia pojazdu (Maksymalnie 6 zdjęć):</label>
+                        <input type="file" id="r_zdjecia" multiple accept="image/*">
+                    </div>
+                    <div class="full-width">
+                        <button type="submit" class="btn-submit btn-police" id="btnRadiowoz">Zapisz radiowóz w bazie</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="panel" id="sec-radiowozy-baza">
+                <div class="panel-header">
+                    <h2>Baza nieoznakowanych radiowozów</h2>
+                </div>
+                <table id="tabelaRadiowozy">
+                    <thead>
+                        <tr><th>Zdjęcia</th><th>Marka</th><th>Model</th><th>Rok</th><th>Kolor</th><th>Rejestracja</th><th>Opis</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+
+        <!-- 3. WIDOK: POJAZDY SKRADZIONE -->
+        <section id="view-skradzione" class="view-tab">
+            <button class="back-btn" onclick="openTab('home')">&larr; Powrót do pulpitu</button>
+
+            <div class="panel" id="sec-skradzione-form">
+                <div class="panel-header">
+                    <h2 style="color: #ff6b6b;">Zgłoś skradziony pojazd</h2>
+                </div>
+                <form id="formSkradzione">
+                    <div>
+                        <label>Marka</label>
+                        <input type="text" id="s_marka" required placeholder="np. Honda">
+                    </div>
+                    <div>
+                        <label>Model</label>
+                        <input type="text" id="s_model" required placeholder="np. Civic VIII">
+                    </div>
+                    <div>
+                        <label>Rok produkcji</label>
+                        <input type="number" id="s_rok" placeholder="np. 2009">
+                    </div>
+                    <div>
+                        <label>Kolor</label>
+                        <input type="text" id="s_kolor" placeholder="np. Srebrny">
+                    </div>
+                    <div>
+                        <label>Numer rejestracyjny</label>
+                        <input type="text" id="s_rejestracja" placeholder="np. KR 12345">
+                    </div>
+                    <div>
+                        <label>Rejon skradzenia / Opis</label>
+                        <input type="text" id="s_opis" placeholder="np. Rysa na drzwiach, skradziono w Sidzinie">
+                    </div>
+                    <div class="full-width">
+                        <label>Zdjęcia pojazdu (Maksymalnie 6 zdjęć):</label>
+                        <input type="file" id="s_zdjecia" multiple accept="image/*">
+                    </div>
+                    <div class="full-width">
+                        <button type="submit" class="btn-submit btn-stolen" id="btnSkradzione">Zgłoś skradzione auto</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="panel" id="sec-skradzione-baza">
+                <div class="panel-header">
+                    <h2>Rejestr skradzionych pojazdów</h2>
+                </div>
+                <table id="tabelaSkradzione">
+                    <thead>
+                        <tr><th>Zdjęcia</th><th>Marka</th><th>Model</th><th>Rok</th><th>Kolor</th><th>Rejestracja</th><th>Opis</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
 
     <script>
-        // TUTAJ WKLEJ SWOJE DANE Z SUPABASE
-
         const SUPABASE_URL = "https://ntifdhyqshnffdyfsvcb.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_GlQOBqXsoTRf8yJpk6CxXQ_tz78qA3I";
 
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Wysyłanie formularza
-        document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
+        function openTab(target) {
+            document.querySelectorAll('.view-tab').forEach(tab => tab.classList.remove('active'));
+
+            if (target === 'home') {
+                document.getElementById('view-home').classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            if (target.startsWith('radiowozy')) {
+                document.getElementById('view-radiowozy').classList.add('active');
+                wczytajRadiowozy();
+                if (target === 'radiowozy-baza') {
+                    setTimeout(() => document.getElementById('sec-radiowozy-baza').scrollIntoView({ behavior: 'smooth' }), 50);
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+
+            if (target.startsWith('skradzione')) {
+                document.getElementById('view-skradzione').classList.add('active');
+                wczytajSkradzione();
+                if (target === 'skradzione-baza') {
+                    setTimeout(() => document.getElementById('sec-skradzione-baza').scrollIntoView({ behavior: 'smooth' }), 50);
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+        }
+
+        // Pomocnicza funkcja do wgrywania plików do Supabase Storage
+        async function uploadPhotos(fileInputId) {
+            const fileInput = document.getElementById(fileInputId);
+            const files = Array.from(fileInput.files);
+
+            if (files.length > 6) {
+                alert("Możesz wybrać maksymalnie 6 zdjęć!");
+                return null;
+            }
+
+            const uploadedUrls = [];
+
+            for (const file of files) {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+                const filePath = `vehicles/${fileName}`;
+
+                const { error: uploadError } = await db.storage
+                    .from('pojazdy-zdjecia')
+                    .upload(filePath, file);
+
+                if (uploadError) {
+                    console.error("Błąd przesyłania zdjęcia:", uploadError);
+                    alert("Błąd podczas wgrywania pliku: " + uploadError.message);
+                    continue;
+                }
+
+                const { data } = db.storage.from('pojazdy-zdjecia').getPublicUrl(filePath);
+                if (data?.publicUrl) {
+                    uploadedUrls.push(data.publicUrl);
+                }
+            }
+
+            return uploadedUrls;
+        }
+
+        // ZGŁASZANIE RADIOWOZU
+        document.getElementById('formRadiowoz').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const typ = document.getElementById('typ').value;
-            
+            const btn = document.getElementById('btnRadiowoz');
+            btn.innerText = "Wgrywanie zdjęć i zapisywanie...";
+            btn.disabled = true;
+
+            const zdjeciaUrls = await uploadPhotos('r_zdjecia');
+            if (zdjeciaUrls === null) {
+                btn.innerText = "Zapisz radiowóz w bazie";
+                btn.disabled = false;
+                return;
+            }
+
             const wpis = {
-                marka: document.getElementById('marka').value,
-                model: document.getElementById('model').value,
-                rok: parseInt(document.getElementById('rok').value) || null,
-                kolor: document.getElementById('kolor').value,
-                rejestracja: document.getElementById('rejestracja').value,
-                opis: document.getElementById('opis').value
+                marka: document.getElementById('r_marka').value,
+                model: document.getElementById('r_model').value,
+                rok: parseInt(document.getElementById('r_rok').value) || null,
+                kolor: document.getElementById('r_kolor').value,
+                rejestracja: document.getElementById('r_rejestracja').value,
+                opis: document.getElementById('r_opis').value,
+                zdjecia: zdjeciaUrls
             };
 
-            const { error } = await db.from(typ).insert([wpis]);
+            const { error } = await db.from('radiowozy').insert([wpis]);
+            btn.innerText = "Zapisz radiowóz w bazie";
+            btn.disabled = false;
 
-            if (error) {
-                alert("Błąd podczas dodawania: " + error.message);
-            } else {
-                alert("Zgłoszenie dodane pomyślnie!");
-                document.getElementById('vehicleForm').reset();
-                wczytajDane();
+            if (error) alert("Błąd: " + error.message);
+            else {
+                alert("Radiowóz dodany pomyślnie!");
+                document.getElementById('formRadiowoz').reset();
+                wczytajRadiowozy();
             }
         });
 
-        // Odczyt danych z bazy
-        async function wczytajDane() {
-            // Radiowozy
-            const { data: radiowozy } = await db.from('radiowozy').select('*').order('created_at', { ascending: false });
-            wypelnijTabele('tabelaRadiowozy', radiowozy);
+        // ZGŁASZANIE AUTA SKRADZIONEGO
+        document.getElementById('formSkradzione').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSkradzione');
+            btn.innerText = "Wgrywanie zdjęć i zapisywanie...";
+            btn.disabled = true;
 
-            // Skradzione
-            const { data: skradzione } = await db.from('skradzione').select('*').order('created_at', { ascending: false });
-            wypelnijTabele('tabelaSkradzione', skradzione);
+            const zdjeciaUrls = await uploadPhotos('s_zdjecia');
+            if (zdjeciaUrls === null) {
+                btn.innerText = "Zgłoś skradzione auto";
+                btn.disabled = false;
+                return;
+            }
+
+            const wpis = {
+                marka: document.getElementById('s_marka').value,
+                model: document.getElementById('s_model').value,
+                rok: parseInt(document.getElementById('s_rok').value) || null,
+                kolor: document.getElementById('s_kolor').value,
+                rejestracja: document.getElementById('s_rejestracja').value,
+                opis: document.getElementById('s_opis').value,
+                zdjecia: zdjeciaUrls
+            };
+
+            const { error } = await db.from('skradzione').insert([wpis]);
+            btn.innerText = "Zgłoś skradzione auto";
+            btn.disabled = false;
+
+            if (error) alert("Błąd: " + error.message);
+            else {
+                alert("Zgłoszenie dodane pomyślnie!");
+                document.getElementById('formSkradzione').reset();
+                wczytajSkradzione();
+            }
+        });
+
+        async function wczytajRadiowozy() {
+            const { data } = await db.from('radiowozy').select('*').order('created_at', { ascending: false });
+            wypelnijTabele('tabelaRadiowozy', data);
+        }
+
+        async function wczytajSkradzione() {
+            const { data } = await db.from('skradzione').select('*').order('created_at', { ascending: false });
+            wypelnijTabele('tabelaSkradzione', data);
         }
 
         function wypelnijTabele(elementId, dane) {
@@ -136,8 +567,18 @@
             tbody.innerHTML = '';
             if (!dane) return;
             dane.forEach(auto => {
+                let galeriaHtml = '-';
+                if (auto.zdjecia && auto.zdjecia.length > 0) {
+                    galeriaHtml = '<div class="photo-gallery">';
+                    auto.zdjecia.forEach(url => {
+                        galeriaHtml += `<a href="${url}" target="_blank"><img src="${url}" class="photo-thumb" alt="Pojazd"></a>`;
+                    });
+                    galeriaHtml += '</div>';
+                }
+
                 tbody.innerHTML += `
                     <tr>
+                        <td>${galeriaHtml}</td>
                         <td>${auto.marka || ''}</td>
                         <td>${auto.model || ''}</td>
                         <td>${auto.rok || ''}</td>
@@ -148,9 +589,6 @@
                 `;
             });
         }
-
-        // Start
-        wczytajDane();
     </script>
 </body>
 </html>
