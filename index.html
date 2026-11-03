@@ -3,29 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moja Pierwsza Strona</title>
+    <title>ScanCy - Rejestr Pojazdów</title>
+    <!-- Biblioteka Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-        h1 { color: #0056b3; }
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 20px; background: #121212; color: #e0e0e0; }
+        h1, h2 { color: #4dabf7; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        button { background: #007bff; color: white; padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #333; padding: 10px; text-align: left; }
+        th { background-color: #2a2a2a; color: #4dabf7; }
     </style>
 </head>
 <body>
+
+    <h1>ScanCy - Rejestr Pojazdów</h1>
+
+    <!-- FORMULARZ ZGŁOSZENIOWY -->
     <div class="card">
-        <h1>Działa??</h1>
-        <p>Jak to widzisz to jest to mega ultra slay plus!</p>
+        <h2>Dodaj Zgłoszenie</h2>
+        <form id="vehicleForm">
+            <div>
+                <label>Typ zgłoszenia:</label>
+                <select id="typ" onchange="toggleFormFields()">
+                    <option value="radiowozy">Nieoznakowany Radiowóz</option>
+                    <option value="skradzione">Pojazd Skradziony</option>
+                </select>
+            </div>
+            <div>
+                <label>Marka:</label>
+                <input type="text" id="marka" required placeholder="np. Kia">
+            </div>
+            <div>
+                <label>Model:</label>
+                <input type="text" id="model" required placeholder="np. Ceed">
+            </div>
+            <div>
+                <label>Rok produkcji:</label>
+                <input type="number" id="rok" placeholder="np. 2021">
+            </div>
+            <div>
+                <label>Kolor:</label>
+                <input type="text" id="kolor" placeholder="np. Czarny">
+            </div>
+            <div>
+                <label>Nr Rejestracyjny:</label>
+                <input type="text" id="rejestracja" placeholder="np. KR 12345">
+            </div>
+            <div class="full-width">
+                <label>Opis / Cechy szczególne:</label>
+                <textarea id="opis" rows="3" placeholder="np. ciemne szyby, uszkodzony zderzak"></textarea>
+            </div>
+            <div class="full-width">
+                <button type="submit">Wyślij Zgłoszenie</button>
+            </div>
+        </form>
     </div>
+
+    <!-- WIDOK DANYCH z BAZY -->
+    <div class="card">
+        <h2>Nieoznakowane Radiowozy</h2>
+        <table id="tabelaRadiowozy">
+            <thead>
+                <tr><th>Marka</th><th>Model</th><th>Rok</th><th>Kolor</th><th>Rejestracja</th><th>Opis</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Skradzione Pojazdy</h2>
+        <table id="tabelaSkradzione">
+            <thead>
+                <tr><th>Marka</th><th>Model</th><th>Rok</th><th>Kolor</th><th>Rejestracja</th><th>Opis</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        // TUTAJ WKLEJ SWOJE DANE Z SUPABASE
+
+        const SUPABASE_URL = "https://ntifdhyqshnffdyfsvcb.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_GlQOBqXsoTRf8yJpk6CxXQ_tz78qA3I";
+
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Wysyłanie formularza
+        document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const typ = document.getElementById('typ').value;
+            
+            const wpis = {
+                marka: document.getElementById('marka').value,
+                model: document.getElementById('model').value,
+                rok: parseInt(document.getElementById('rok').value) || null,
+                kolor: document.getElementById('kolor').value,
+                rejestracja: document.getElementById('rejestracja').value,
+                opis: document.getElementById('opis').value
+            };
+
+            const { error } = await db.from(typ).insert([wpis]);
+
+            if (error) {
+                alert("Błąd podczas dodawania: " + error.message);
+            } else {
+                alert("Zgłoszenie dodane pomyślnie!");
+                document.getElementById('vehicleForm').reset();
+                wczytajDane();
+            }
+        });
+
+        // Odczyt danych z bazy
+        async function wczytajDane() {
+            // Radiowozy
+            const { data: radiowozy } = await db.from('radiowozy').select('*').order('created_at', { ascending: false });
+            wypelnijTabele('tabelaRadiowozy', radiowozy);
+
+            // Skradzione
+            const { data: skradzione } = await db.from('skradzione').select('*').order('created_at', { ascending: false });
+            wypelnijTabele('tabelaSkradzione', skradzione);
+        }
+
+        function wypelnijTabele(elementId, dane) {
+            const tbody = document.querySelector(`#${elementId} tbody`);
+            tbody.innerHTML = '';
+            if (!dane) return;
+            dane.forEach(auto => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${auto.marka || ''}</td>
+                        <td>${auto.model || ''}</td>
+                        <td>${auto.rok || ''}</td>
+                        <td>${auto.kolor || ''}</td>
+                        <td>${auto.rejestracja || ''}</td>
+                        <td>${auto.opis || ''}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Start
+        wczytajDane();
+    </script>
 </body>
 </html>
