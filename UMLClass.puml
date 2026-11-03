@@ -1,0 +1,34 @@
+@startuml
+class Driver{
++string name
++string surname
++AddCarToDatabase(Car newCar)
++CheckDatabase()
+#StartRegScan()
+#StopRegScan()
+#StartRecScan()
+#StopRecScan()
+#StartRec()
+#StopRec()
+}
+
+class Policeman{
++int badgeNr
+-StartPolScan()
+-StopPolScan()
+}
+class Car{
++string color
++string brand
++string model
++string regNr
++string desc
++enum type
+}
+Driver <|-- Policeman
+
+/'1'/ Driver ..> Car : <<use>>
+
+
+
+@enduml
